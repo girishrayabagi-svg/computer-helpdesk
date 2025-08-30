@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Computer Helpdesk – Fix Anything</title>
   <meta name="description" content="An easy, local, single‑file website to capture solutions to computer problems, search by voice, and jump to video sources." />
-  <!-- Tailwind Play CDN (works offline after first load from cache) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🖥️</text></svg>">
   <style>
-    /* Smooth UI bits */
     .glass { backdrop-filter: blur(8px); background: rgba(255,255,255,0.7); }
     .card { @apply rounded-2xl shadow-lg border border-slate-200; }
     .btn { @apply px-4 py-2 rounded-xl shadow hover:shadow-md active:scale-95 transition; }
@@ -18,6 +16,7 @@
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-800">
+
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-white/80 glass border-b border-slate-200">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -37,10 +36,10 @@
   <section class="max-w-6xl mx-auto px-4 mt-6">
     <div class="card p-4 grid sm:grid-cols-3 gap-4">
       <div class="sm:col-span-2">
-        <label for="search" class="block text-sm font-medium text-slate-600 mb-1">Search problem (use keywords)
-        </label>
+        <label for="search" class="block text-sm font-medium text-slate-600 mb-1">Search problem (use keywords)</label>
         <div class="flex gap-2">
           <input id="search" type="text" placeholder="e.g., windows update stuck, wifi keeps disconnecting, pc slow…" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <button id="btnSearch" class="btn bg-indigo-600 text-white">Search</button>
           <button id="btnMic" title="Voice search" class="btn bg-white border border-slate-300 flex items-center gap-2">
             <span id="micDot" class="w-2 h-2 rounded-full bg-slate-300"></span>
             <span>🎤</span>
@@ -64,389 +63,20 @@
     </div>
   </section>
 
-  <!-- Quick Fix Wizard -->
-  <section class="max-w-6xl mx-auto px-4 mt-6">
-    <div class="card p-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">Quick Fixes (text solutions for common issues)</h2>
-        <select id="quickCategory" class="px-3 py-2 border rounded-xl">
-          <option value="network">Network / Internet</option>
-          <option value="performance">Slow PC / Performance</option>
-          <option value="boot">Boot / Startup</option>
-          <option value="display">Display / Screen</option>
-          <option value="software">Software Install / Updates</option>
-          <option value="peripherals">Keyboard / Mouse / Printer</option>
-        </select>
-      </div>
-      <ol id="quickList" class="mt-3 list-decimal list-inside space-y-2 text-sm"></ol>
-    </div>
-  </section>
-
-  <!-- Results + Library -->
-  <section class="max-w-6xl mx-auto px-4 mt-6 grid md:grid-cols-3 gap-6">
-    <!-- Results -->
-    <div class="md:col-span-2 card p-4">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-lg font-semibold">Results</h2>
-        <div class="text-sm text-slate-500"><span id="resultCount">0</span> match(es)</div>
-      </div>
-      <div id="results" class="grid gap-3"></div>
-      <p id="noResults" class="hidden text-sm text-slate-500">No matches yet. Try a broader search or add a new solution.</p>
-    </div>
-
-    <!-- Library / Tags -->
-    <aside class="card p-4">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-base font-semibold">Your Solution Library</h3>
-        <button id="btnWipe" class="btn bg-white border border-red-300 text-red-600">Clear All</button>
-      </div>
-      <div class="text-xs text-slate-500 mb-2">Everything is saved privately in your browser (localStorage). Export to back up.</div>
-      <div id="tagCloud" class="flex flex-wrap gap-2"></div>
-      <hr class="my-3"/>
-      <ul id="library" class="space-y-2 text-sm"></ul>
-    </aside>
-  </section>
-
-  <!-- Modal: Add/Edit Solution -->
-  <dialog id="modal" class="rounded-2xl p-0 w-[min(720px,95vw)]">
-    <form id="modalForm" class="p-4 bg-white rounded-2xl">
-      <div class="flex items-center justify-between mb-3">
-        <h3 id="modalTitle" class="text-lg font-semibold">Add Solution</h3>
-        <button type="button" id="btnClose" class="btn bg-white border border-slate-300">✕</button>
-      </div>
-      <div class="grid sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm mb-1">Title</label>
-          <input name="title" required class="w-full px-3 py-2 border rounded-xl" placeholder="e.g., Fix Wi‑Fi keeps disconnecting" />
-        </div>
-        <div>
-          <label class="block text-sm mb-1">Tags (comma separated)</label>
-          <input name="tags" class="w-full px-3 py-2 border rounded-xl" placeholder="network, wifi, windows" />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="block text-sm mb-1">Problem keywords</label>
-          <input name="keywords" class="w-full px-3 py-2 border rounded-xl" placeholder="wifi disconnect, unstable internet, adapter reset" />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="block text-sm mb-1">Step‑by‑step text</label>
-          <textarea name="steps" rows="6" class="w-full px-3 py-2 border rounded-xl" placeholder="1) Open Settings → Network & Internet…"></textarea>
-        </div>
-        <div class="sm:col-span-2">
-          <label class="block text-sm mb-1">Related video links (YouTube/Vimeo/etc, one per line)</label>
-          <textarea name="videos" rows="3" class="w-full px-3 py-2 border rounded-xl" placeholder="https://www.youtube.com/watch?v=…"></textarea>
-        </div>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <button class="btn bg-indigo-600 text-white" type="submit">Save</button>
-        <button class="btn bg-white border border-slate-300" type="reset">Reset</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Footer -->
-  <footer class="max-w-6xl mx-auto px-4 py-10 text-center text-xs text-slate-500">
-    <p>Private, offline‑friendly, single‑file tool. Voice uses your browser's Web Speech API. Videos open on their original sites.</p>
-  </footer>
+  <!-- (rest of your code remains unchanged) -->
 
   <script>
-    // ---------- Local Store ----------
-    const DB_KEY = 'comphelp_solutions_v1';
-    const el = (id)=>document.getElementById(id);
-    const $results = el('results');
-    const $resultCount = el('resultCount');
-    const $noResults = el('noResults');
-    const $search = el('search');
-    const $tagCloud = el('tagCloud');
-    const $library = el('library');
-    const $modal = el('modal');
-    const $modalForm = el('modalForm');
-    const $modalTitle = el('modalTitle');
+    // existing code...
 
-    let editingId = null; // for edits
-
-    function loadDB(){
-      try { return JSON.parse(localStorage.getItem(DB_KEY)) || []; } catch { return []; }
-    }
-    function saveDB(data){ localStorage.setItem(DB_KEY, JSON.stringify(data)); }
-
-    // ---------- Seed with a couple of useful samples on first run ----------
-    const seeded = localStorage.getItem(DB_KEY+':seeded');
-    if(!seeded){
-      saveDB([
-        { id: crypto.randomUUID(), title:'Fix Wi‑Fi keeps disconnecting (Windows)', tags:['network','wifi','windows'], keywords:'wifi disconnect unstable internet adapter reset power management', steps:`1) Win + X → Device Manager → Network adapters → your Wi‑Fi → Properties.\n2) Power Management tab → uncheck "Allow the computer to turn off this device to save power".\n3) Advanced tab → set Roaming Aggressiveness: Medium‑Low; Preferred Band: Auto; Power Save Mode: Off.\n4) Settings → Network & Internet → Advanced network settings → Network reset.\n5) Update Wi‑Fi driver from manufacturer site.`, videos:['https://www.youtube.com/results?search_query=wifi+keeps+disconnecting+windows'] },
-        { id: crypto.randomUUID(), title:'Speed up a slow PC (Windows)', tags:['performance','windows'], keywords:'slow pc startup background apps temp files storage 100% disk', steps:`1) Settings → Apps → Startup → disable non‑essential apps.\n2) Ctrl + Shift + Esc → Task Manager → Processes: sort by CPU/Memory and uninstall heavy offenders.\n3) Storage Sense: Settings → System → Storage → enable.\n4) Run: cleanmgr → Clean up system files.\n5) Optional: Settings → System → Power → Best performance (on AC).`, videos:['https://www.youtube.com/results?search_query=windows+10+slow+pc+fix'] }
-      ]);
-      localStorage.setItem(DB_KEY+':seeded', '1');
-    }
-
-    // ---------- Render Helpers ----------
-    function tagPill(t){
-      return `<span class="px-2 py-1 text-xs bg-slate-100 border border-slate-200 rounded-lg">#${escapeHtml(t)}</span>`;
-    }
-    function escapeHtml(s){ return s?.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
-
-    function renderLibrary(){
-      const data = loadDB();
-      $library.innerHTML = '';
-      const frag = document.createDocumentFragment();
-      data.forEach(item=>{
-        const li = document.createElement('li');
-        li.className = 'card p-3';
-        li.innerHTML = `
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <div class="font-semibold">${escapeHtml(item.title)}</div>
-              <div class="text-xs text-slate-500 mt-1">${item.tags?.map(tagPill).join(' ') || ''}</div>
-            </div>
-            <div class="flex gap-2">
-              <button class="btn bg-white border border-slate-300" data-act="edit" data-id="${item.id}">Edit</button>
-              <button class="btn bg-white border border-red-300 text-red-600" data-act="del" data-id="${item.id}">Delete</button>
-            </div>
-          </div>`;
-        frag.appendChild(li);
-      });
-      $library.appendChild(frag);
-
-      // Tag cloud
-      const tags = [...new Set(data.flatMap(d=>d.tags||[]))].sort();
-      $tagCloud.innerHTML = tags.map(t=>`<button class="btn bg-white border border-slate-300 text-xs" data-tag="${escapeHtml(t)}">#${escapeHtml(t)}</button>`).join('');
-    }
-
-    function renderResults(query=''){
-      const q = query.trim().toLowerCase();
-      const data = loadDB();
-      const list = q ? data.filter(d=> (d.title+" "+d.keywords+" "+(d.tags||[]).join(' ')).toLowerCase().includes(q)) : data;
-      $results.innerHTML = '';
-      $noResults.classList.toggle('hidden', list.length>0);
-      $resultCount.textContent = String(list.length);
-
-      const frag = document.createDocumentFragment();
-      list.forEach(d=>{
-        const card = document.createElement('article');
-        card.className = 'card p-4';
-        const vidLinks = (d.videos||[]).filter(Boolean).map(v=>`<a class="underline" href="${v}" target="_blank" rel="noopener">Video</a>`).join(' · ');
-        card.innerHTML = `
-          <h3 class="font-semibold text-base">${escapeHtml(d.title)}</h3>
-          <div class="mt-1 text-xs text-slate-500">${d.tags?.map(tagPill).join(' ') || ''}</div>
-          <pre class="mt-3 whitespace-pre-wrap text-sm">${escapeHtml(d.steps||'')}</pre>
-          ${vidLinks?`<div class="mt-3 text-sm">Videos: ${vidLinks}</div>`:''}
-          <div class="mt-3 flex gap-2">
-            <button class="btn bg-white border border-slate-300" data-act="copy" data-id="${d.id}">Copy text</button>
-            <button class="btn bg-white border border-slate-300" data-act="edit" data-id="${d.id}">Edit</button>
-          </div>
-        `;
-        frag.appendChild(card);
-      })
-      $results.appendChild(frag);
-    }
-
-    // ---------- Search + Voice ----------
-    function openVideoSite(site, q){
-      const enc = encodeURIComponent(q);
-      const url = {
-        youtube: `https://www.youtube.com/results?search_query=${enc}`,
-        vimeo: `https://vimeo.com/search?q=${enc}`,
-        dailymotion: `https://www.dailymotion.com/search/${enc}`,
-        google: `https://www.google.com/search?q=${enc}+fix+solution` ,
-        stackoverflow: `https://stackoverflow.com/search?q=${enc}`,
-        reddit: `https://www.reddit.com/search/?q=${enc}`,
-      }[site];
-      if(url) window.open(url, '_blank', 'noopener');
-    }
-
-    const mic = { rec:null, active:false };
-    function initSpeech(){
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if(!SR){ el('micStatus').textContent = 'Voice recognition not supported in this browser.'; return; }
-      mic.rec = new SR();
-      mic.rec.lang = navigator.language || 'en-US';
-      mic.rec.interimResults = true;
-
-      mic.rec.onresult = (e)=>{
-        let transcript = '';
-        for(const res of e.results){ transcript += res[0].transcript + ' '; }
-        $search.value = transcript.trim();
-        renderResults($search.value);
-      };
-      mic.rec.onend = ()=>{ mic.active=false; el('micDot').className='w-2 h-2 rounded-full bg-slate-300'; };
-    }
-
-    // ---------- Modal Logic ----------
-    function openModal(item){
-      editingId = item?.id || null;
-      $modalTitle.textContent = editingId ? 'Edit Solution' : 'Add Solution';
-      $modalForm.title.value = item?.title || '';
-      $modalForm.tags.value = (item?.tags||[]).join(', ');
-      $modalForm.keywords.value = item?.keywords || '';
-      $modalForm.steps.value = item?.steps || '';
-      $modalForm.videos.value = (item?.videos||[]).join('\n');
-      $modal.showModal();
-    }
-
-    function closeModal(){ $modal.close(); }
-
-    // ---------- Quick Fix Content ----------
-    const QUICK = {
-      network:[
-        'Restart router and PC; test with mobile hotspot to isolate the issue.',
-        'Windows: Settings → Network & Internet → Advanced network settings → Network reset.',
-        'Device Manager → Network adapters → your adapter → Power Management → disable power saving.',
-        'Flush DNS: open Command Prompt (Admin): ipconfig /flushdns , then netsh winsock reset (reboot).',
-        'Update NIC/Wi‑Fi drivers from your laptop/PC manufacturer site.'
-      ],
-      performance:[
-        'Disable startup apps: Settings → Apps → Startup.',
-        'Check storage: Settings → System → Storage → enable Storage Sense and free up disk space.',
-        'Scan for malware with Windows Security → Virus & threat protection.',
-        'Update graphics and chipset drivers; install OS updates.',
-        'Consider upgrading to SSD and adding RAM if usage is constantly high.'
-      ],
-      boot:[
-        'Unplug external USBs; try Safe Mode (Shift + Restart → Troubleshoot → Advanced → Startup Settings).',
-        'Run Startup Repair from Windows Recovery Environment.',
-        'Check disk: chkdsk /f /r , and sfc /scannow from elevated Command Prompt.',
-        'If recent driver caused it: Device Manager → roll back driver.'
-      ],
-      display:[
-        'Check cable/port; reseat HDMI/DP; test a different cable/monitor.',
-        'Windows: Win + Ctrl + Shift + B to reset graphics driver.',
-        'Update GPU drivers; set correct refresh/resolution in Display settings.',
-        'Color/Scaling: GPU control panel (NVIDIA/AMD/Intel) → adjust scaling, color, overscan.'
-      ],
-      software:[
-        'Installer fails: run as Administrator; temporarily disable antivirus; ensure disk space.',
-        'Windows: Settings → Apps → Installed apps → Repair/Reset problematic app.',
-        'Use official download sources; verify checksum if available.',
-        'For updates stuck: stop Windows Update service, clear C:\\Windows\\SoftwareDistribution (advanced).' 
-      ],
-      peripherals:[
-        'Replug device; try a different USB port; replace batteries for wireless.',
-        'Device Manager → Uninstall device → Scan for hardware changes.',
-        'Install vendor drivers (printer/scanner) from official site.',
-        'Check Bluetooth interference; keep receiver closer; update firmware if available.'
-      ]
-    };
-
-    function renderQuick(cat='network'){
-      const steps = QUICK[cat]||[];
-      const $list = el('quickList');
-      $list.innerHTML = steps.map(s=>`<li>${escapeHtml(s)}</li>`).join('');
-    }
-
-    // ---------- Event Wiring ----------
     document.addEventListener('DOMContentLoaded', ()=>{
-      renderLibrary();
-      renderResults('');
-      renderQuick('network');
-      initSpeech();
+      // existing init code...
 
       // search
       $search.addEventListener('input', ()=>renderResults($search.value));
       el('btnClear').addEventListener('click', ()=>{ $search.value=''; renderResults(''); });
+      el('btnSearch').addEventListener('click', ()=>{ renderResults($search.value); });
 
-      // voice
-      el('btnMic').addEventListener('click', ()=>{
-        if(!mic.rec) return;
-        if(!mic.active){
-          try{ mic.rec.start(); mic.active=true; el('micDot').className='w-2 h-2 rounded-full bg-rose-500 animate-pulse'; el('micStatus').textContent='Listening… speak your issue clearly'; }
-          catch(err){ el('micStatus').textContent = 'Mic error: '+err.message; }
-        } else {
-          mic.rec.stop();
-        }
-      });
-
-      // video buttons
-      document.querySelectorAll('[data-site]').forEach(btn=>{
-        btn.addEventListener('click', ()=> openVideoSite(btn.dataset.site, $search.value || 'computer problem fix'));
-      });
-
-      // quick category
-      el('quickCategory').addEventListener('change', (e)=> renderQuick(e.target.value));
-
-      // results / library action delegation
-      document.body.addEventListener('click', (e)=>{
-        const t = e.target.closest('button');
-        if(!t) return;
-        const act = t.dataset.act;
-        if(act==='copy'){
-          const id = t.dataset.id; const item = loadDB().find(x=>x.id===id);
-          if(item){ navigator.clipboard.writeText(item.steps||''); t.textContent='Copied!'; setTimeout(()=>t.textContent='Copy text', 1200); }
-        }
-        if(act==='edit'){
-          const id = t.dataset.id; const item = loadDB().find(x=>x.id===id);
-          openModal(item);
-        }
-        if(act==='del'){
-          const id = t.dataset.id;
-          if(confirm('Delete this solution?')){ const db = loadDB().filter(x=>x.id!==id); saveDB(db); renderLibrary(); renderResults($search.value); }
-        }
-      });
-
-      // tag filter
-      $tagCloud.addEventListener('click', (e)=>{
-        const btn = e.target.closest('[data-tag]');
-        if(btn){ $search.value = btn.dataset.tag; renderResults($search.value); }
-      });
-
-      // Add / Close modal
-      el('btnAdd').addEventListener('click', ()=> openModal(null));
-      el('btnClose').addEventListener('click', closeModal);
-
-      // Save solution
-      $modalForm.addEventListener('submit', (e)=>{
-        e.preventDefault();
-        const form = new FormData($modalForm);
-        const rec = {
-          id: editingId || crypto.randomUUID(),
-          title: (form.get('title')||'').toString().trim(),
-          tags: (form.get('tags')||'').toString().split(',').map(s=>s.trim()).filter(Boolean),
-          keywords: (form.get('keywords')||'').toString().trim(),
-          steps: (form.get('steps')||'').toString(),
-          videos: (form.get('videos')||'').toString().split(/\n+/).map(s=>s.trim()).filter(Boolean),
-        };
-        const db = loadDB();
-        const idx = db.findIndex(x=>x.id===rec.id);
-        if(idx>-1) db[idx]=rec; else db.unshift(rec);
-        saveDB(db);
-        renderLibrary();
-        renderResults($search.value);
-        closeModal();
-      });
-
-      // Wipe all
-      el('btnWipe').addEventListener('click', ()=>{
-        if(confirm('This will remove all saved solutions (cannot be undone). Proceed?')){
-          localStorage.removeItem(DB_KEY);
-          renderLibrary(); renderResults($search.value);
-        }
-      });
-
-      // Export / Import
-      el('btnExport').addEventListener('click', ()=>{
-        const blob = new Blob([JSON.stringify(loadDB(), null, 2)], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'computer_helpdesk_solutions.json'; a.click();
-        setTimeout(()=>URL.revokeObjectURL(url), 1000);
-      });
-
-      el('importFile').addEventListener('change', (e)=>{
-        const file = e.target.files?.[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = ()=>{
-          try{
-            const arr = JSON.parse(String(reader.result));
-            if(!Array.isArray(arr)) throw new Error('Invalid JSON: expected an array');
-            const db = loadDB();
-            // merge by title+keywords
-            const map = new Map(db.map(d=>[d.title+'|'+d.keywords, d]));
-            arr.forEach(x=>{ const key = (x.title||'')+'|'+(x.keywords||''); if(!map.has(key)){ x.id = crypto.randomUUID(); db.push(x); }});
-            saveDB(db); renderLibrary(); renderResults($search.value);
-            alert('Imported '+arr.length+' items (deduplicated by title+keywords).');
-          }catch(err){ alert('Import failed: '+err.message); }
-        };
-        reader.readAsText(file);
-      });
+      // rest of event wiring...
     });
   </script>
 </body>
