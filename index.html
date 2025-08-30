@@ -58,25 +58,61 @@
           <button data-site="google" class="btn bg-white border border-slate-300">Google</button>
           <button data-site="stackoverflow" class="btn bg-white border border-slate-300">StackOverflow</button>
           <button data-site="reddit" class="btn bg-white border border-slate-300">Reddit</button>
+          <button data-site="w3schools" onclick="window.open('https://www.w3schools.com','_blank')" class="btn bg-white border border-slate-300">W3Schools</button>
+          <button data-site="geeksforgeeks" onclick="window.open('https://www.geeksforgeeks.org','_blank')" class="btn bg-white border border-slate-300">GeeksforGeeks</button>
+          <button data-site="coursera" onclick="window.open('https://www.coursera.org','_blank')" class="btn bg-white border border-slate-300">Coursera</button>
+          <button data-site="udemy" onclick="window.open('https://www.udemy.com','_blank')" class="btn bg-white border border-slate-300">Udemy</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- (rest of your code remains unchanged) -->
+  <!-- Default Data Section -->
+  <section class="max-w-6xl mx-auto px-4 mt-6">
+    <h2 class="text-lg font-semibold mb-3">Preloaded Common Issues</h2>
+    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+      <li><strong>Wi-Fi keeps disconnecting</strong> – Check router settings, update network drivers, reset TCP/IP stack.</li>
+      <li><strong>Computer running slow</strong> – Remove startup programs, increase RAM, clean temp files, scan for malware.</li>
+      <li><strong>Windows update stuck</strong> – Restart in Safe Mode, run Windows Update troubleshooter, clear SoftwareDistribution folder.</li>
+      <li><strong>Blue Screen of Death (BSOD)</strong> – Update drivers, check for faulty RAM, run system file checker.</li>
+      <li><strong>Keyboard not working</strong> – Check USB ports, reinstall keyboard driver, try external keyboard.</li>
+      <li><strong>Printer not responding</strong> – Reinstall printer driver, restart spooler service, check cables.</li>
+      <li><strong>No sound on computer</strong> – Update sound driver, check playback device, troubleshoot sound settings.</li>
+    </ul>
+  </section>
 
   <script>
-    // existing code...
+    const $search = document.getElementById('search');
+    const $results = document.createElement('div');
+    $results.className = "max-w-6xl mx-auto px-4 mt-6 grid gap-4";
+    document.body.appendChild($results);
+
+    function renderResults(query){
+      $results.innerHTML = '';
+      if(!query) return;
+      const data = [
+        {title:'Wi-Fi keeps disconnecting', content:'Check router settings, update drivers, reset TCP/IP stack.'},
+        {title:'Computer running slow', content:'Disable startup apps, add RAM, clean temp files, scan for malware.'},
+        {title:'Windows update stuck', content:'Restart in Safe Mode, run troubleshooter, clear update cache.'},
+        {title:'BSOD (Blue Screen)', content:'Update drivers, test RAM, run system file checker.'},
+        {title:'No sound issue', content:'Update sound driver, check playback device, troubleshoot audio.'},
+      ];
+      const matches = data.filter(d=>d.title.toLowerCase().includes(query.toLowerCase()));
+      matches.forEach(d=>{
+        const card = document.createElement('div');
+        card.className = 'card p-4 bg-white';
+        card.innerHTML = `<h3 class="font-semibold text-lg">${d.title}</h3><p class="text-slate-600">${d.content}</p>`;
+        $results.appendChild(card);
+      });
+    }
+
+    function el(id){ return document.getElementById(id); }
 
     document.addEventListener('DOMContentLoaded', ()=>{
-      // existing init code...
-
-      // search
       $search.addEventListener('input', ()=>renderResults($search.value));
       el('btnClear').addEventListener('click', ()=>{ $search.value=''; renderResults(''); });
       el('btnSearch').addEventListener('click', ()=>{ renderResults($search.value); });
-
-      // rest of event wiring...
+      $search.addEventListener('keypress', (e)=>{ if(e.key==='Enter'){ renderResults($search.value); }});
     });
   </script>
 </body>
